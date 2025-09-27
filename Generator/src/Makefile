@@ -1,44 +1,33 @@
-# Makefile for AutoVisualizer with auto-download of XChart
+# Makefile for Java Sales Dashboard
 
+# Variables
 JAVAC = javac
 JAVA = java
+JFLAGS = -d bin
+SRC_DIR = src
+BIN_DIR = bin
+MAIN_CLASS = SalesDashboard.java
+JAR_LIB = lib/xchart-3.8.1.jar # Add your JAR dependencies here
 
-SRC = AutoVisualizer.java
-BIN = bin
-LIB = lib
-JAR_NAME = xchart-3.8.1.jar
-JAR_URL = https://repo1.maven.org/maven2/org/knowm/xchart/xchart/3.8.1/xchart-3.8.1.jar
-JAR_PATH = $(LIB)/$(JAR_NAME)
+# Directories
+SRC = $(wildcard $(SRC_DIR)/*.java)
+CLASS_FILES = $(SRC:$(SRC_DIR)/%.java=$(BIN_DIR)/%.class)
 
-# Classpath: use ";" on Windows instead of ":"
-CP = .:$(JAR_PATH):$(BIN)
+# Default target: compile and run
+all: compile run
 
-# Default target
-all: compile
+# Compile Java files
+compile: $(CLASS_FILES)
 
-# Download the jar if it's not already there
-$(JAR_PATH):
-	@echo "Downloading XChart..."
-	@mkdir -p $(LIB)
-	@curl -L -o $(JAR_PATH) $(JAR_URL)
+$(BIN_DIR)/%.class: $(SRC_DIR)/%.java
+	$(JAVAC) $(JFLAGS) $<
 
-# Compile Java code
-compile: $(JAR_PATH)
-	@mkdir -p $(BIN)
-	$(JAVAC) -cp $(CP) -d $(BIN) $(SRC)
-	@echo "Compilation complete."
+# Run the application
+run: $(CLASS_FILES)
+	$(JAVA) -cp "$(BIN_DIR):$(JAR_LIB)" $(MAIN_CLASS)
 
-# Run the program
-run: compile
-	$(JAVA) -cp $(CP) AutoVisualizer
-
-# Remove compiled class files
+# Clean up compiled files
 clean:
-	rm -rf $(BIN)/*.class
-	@echo "Cleaned compiled classes."
+	rm -rf $(BIN_DIR)/*.class
 
-# Remove everything (including downloaded JAR)
-distclean: clean
-	rm -f $(JAR_PATH)
-	@echo "Removed downloaded libraries."
-
+.PHONY: all compile run clean
