@@ -133,7 +133,7 @@ public class AutoVisualizer {
     }
 
     public static void main(String[] args) throws IOException {
-        String filePath = "payroll.csv"; // replace with your dataset
+        String filePath = "amazon_sales_dataset.csv"; // replace with your dataset
         autoChart(filePath);
     }
 }
