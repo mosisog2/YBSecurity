@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LIDA Multi-Dataset Analytics Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.2em;
+        }
+        
+        .controls {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .control-group {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .control-group label {
+            font-weight: 600;
+            color: #2c3e50;
+            min-width: 120px;
+        }
+        
+        select, input {
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            min-width: 200px;
+            transition: all 0.3s ease;
+        }
+        
+        select:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-container {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+        
+        .chart-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .chart-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-weight: 500;
+        }
+        
+        .status.loading {
+            background: #e3f2fd;
+            color: #1976d2;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .status.success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            border-left: 4px solid #4caf50;
+        }
+        
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #f44336;
+        }
+        
+        .lida-controls {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .lida-controls h3 {
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+        
+        .query-input {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .query-examples {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        .example-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .example-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .dataset-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .dataset-info h4 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .dataset-info p {
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+        
+        .dataset-stats {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            min-width: 100px;
+        }
+        
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .control-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .control-group label {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 LIDA Multi-Dataset Analytics</h1>
+            <p>AI-Powered Data Visualization and Analysis Platform</p>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="datasetSelect">📊 Dataset:</label>
+                <select id="datasetSelect">
+                    <option value="">Select a dataset...</option>
+                </select>
+                <button class="btn" onclick="loadDataset()">Load Dataset</button>
+            </div>
+        </div>
+
+        <div id="datasetInfo" class="dataset-info" style="display: none;">
+            <h4 id="datasetTitle"></h4>
+            <p id="datasetDescription"></p>
+            <div class="dataset-stats" id="datasetStats"></div>
+        </div>
+
+        <div class="lida-controls">
+            <h3>🧠 Natural Language Query</h3>
+            <textarea id="queryInput" class="query-input" placeholder="Ask questions about your data in natural language...
+Examples:
+• Show me the sales trends over time
+• Compare performance across different categories
+• What are the top performing regions?
+• Create a correlation analysis between variables"></textarea>
+            
+            <div class="query-examples" id="queryExamples">
+                <!-- Examples will be loaded dynamically -->
+            </div>
+            
+            <button class="btn" onclick="processLidaQuery()">🚀 Generate Visualization</button>
+        </div>
+
+        <div id="status"></div>
+
+        <div class="dashboard-grid">
+            <div class="chart-container">
+                <div class="chart-title">📈 Primary Analysis</div>
+                <canvas id="primaryChart"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-title">📊 Secondary Analysis</div>
+                <canvas id="secondaryChart"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-title">🎯 Trend Analysis</div>
+                <canvas id="trendChart"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-title">📋 Distribution Analysis</div>
+                <canvas id="distributionChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentDataset = null;
+        let charts = {};
+        
+        // Initialize dashboard
+        async function initDashboard() {
+            showStatus('Loading available datasets...', 'loading');
+            
+            try {
+                const response = await fetch('/api/datasets');
+                const data = await response.json();
+                
+                const select = document.getElementById('datasetSelect');
+                select.innerHTML = '<option value="">Select a dataset...</option>';
+                
+                data.datasets.forEach(dataset => {
+                    const option = document.createElement('option');
+                    option.value = dataset.name;
+                    option.textContent = `${dataset.title} (${dataset.records} records)`;
+                    select.appendChild(option);
+                });
+                
+                showStatus('✅ Datasets loaded successfully!', 'success');
+                
+            } catch (error) {
+                showStatus(`❌ Error loading datasets: ${error.message}`, 'error');
+            }
+        }
+        
+        async function loadDataset() {
+            const select = document.getElementById('datasetSelect');
+            const selectedDataset = select.value;
+            
+            if (!selectedDataset) {
+                showStatus('⚠️ Please select a dataset first', 'error');
+                return;
+            }
+            
+            showStatus(`Loading ${selectedDataset} dataset...`, 'loading');
+            currentDataset = selectedDataset;
+            
+            try {
+                // Load dataset information
+                const infoResponse = await fetch(`/api/dataset-info?dataset=${selectedDataset}`);
+                const infoData = await infoResponse.json();
+                
+                displayDatasetInfo(infoData);
+                
+                // Load query examples
+                const examplesResponse = await fetch(`/api/query-examples?dataset=${selectedDataset}`);
+                const examplesData = await examplesResponse.json();
+                
+                displayQueryExamples(examplesData.examples || []);
+                
+                showStatus(`✅ ${selectedDataset} dataset loaded successfully!`, 'success');
+                
+            } catch (error) {
+                showStatus(`❌ Error loading dataset: ${error.message}`, 'error');
+            }
+        }
+        
+        function displayDatasetInfo(info) {
+            const infoDiv = document.getElementById('datasetInfo');
+            const titleDiv = document.getElementById('datasetTitle');
+            const descDiv = document.getElementById('datasetDescription');
+            const statsDiv = document.getElementById('datasetStats');
+            
+            titleDiv.textContent = info.title;
+            descDiv.textContent = info.description;
+            
+            statsDiv.innerHTML = `
+                <div class="stat-item">
+                    <div class="stat-value">${info.records}</div>
+                    <div class="stat-label">Records</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">${info.columns}</div>
+                    <div class="stat-label">Columns</div>
+                </div>
+            `;
+            
+            infoDiv.style.display = 'block';
+        }
+        
+        function displayQueryExamples(examples) {
+            const examplesDiv = document.getElementById('queryExamples');
+            examplesDiv.innerHTML = '';
+            
+            examples.forEach(example => {
+                const btn = document.createElement('button');
+                btn.className = 'example-btn';
+                btn.textContent = example;
+                btn.onclick = () => {
+                    document.getElementById('queryInput').value = example;
+                };
+                examplesDiv.appendChild(btn);
+            });
+        }
+        
+        async function processLidaQuery() {
+            const query = document.getElementById('queryInput').value.trim();
+            
+            if (!query) {
+                showStatus('⚠️ Please enter a query', 'error');
+                return;
+            }
+            
+            if (!currentDataset) {
+                showStatus('⚠️ Please select a dataset first', 'error');
+                return;
+            }
+            
+            showStatus('🤖 Processing your query with LIDA AI...', 'loading');
+            
+            try {
+                const response = await fetch(`/api/lida-visualize?dataset=${currentDataset}&query=${encodeURIComponent(query)}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Create visualizations based on LIDA results
+                    createVisualizationsFromLida(result.data);
+                    showStatus('✅ Visualization generated successfully!', 'success');
+                } else {
+                    showStatus(`❌ Error: ${result.error}`, 'error');
+                }
+                
+            } catch (error) {
+                showStatus(`❌ Error processing query: ${error.message}`, 'error');
+            }
+        }
+        
+        function createVisualizationsFromLida(data) {
+            // Destroy existing charts
+            Object.values(charts).forEach(chart => {
+                if (chart) chart.destroy();
+            });
+            charts = {};
+            
+            // Create multiple visualizations based on the data
+            if (data.length > 0) {
+                const sample = data[0];
+                const labels = Object.keys(sample);
+                const numericColumns = labels.filter(label => !isNaN(sample[label]));
+                
+                // Primary Chart - Bar chart of first numeric column
+                if (numericColumns.length > 0) {
+                    createBarChart('primaryChart', data, numericColumns[0]);
+                }
+                
+                // Secondary Chart - Line chart if we have time series or second numeric column
+                if (numericColumns.length > 1) {
+                    createLineChart('secondaryChart', data, numericColumns[1]);
+                }
+                
+                // Trend Chart - Combined visualization
+                if (numericColumns.length >= 2) {
+                    createScatterChart('trendChart', data, numericColumns[0], numericColumns[1]);
+                }
+                
+                // Distribution Chart - Pie chart for categorical data
+                const categoricalColumn = labels.find(label => isNaN(sample[label]));
+                if (categoricalColumn) {
+                    createPieChart('distributionChart', data, categoricalColumn);
+                }
+            }
+        }
+        
+        function createBarChart(canvasId, data, column) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            
+            // Aggregate data for bar chart
+            const aggregated = {};
+            data.forEach(row => {
+                const key = row[Object.keys(row)[0]] || 'Unknown';
+                aggregated[key] = (aggregated[key] || 0) + (parseFloat(row[column]) || 0);
+            });
+            
+            charts[canvasId] = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(aggregated),
+                    datasets: [{
+                        label: column,
+                        data: Object.values(aggregated),
+                        backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+        
+        function createLineChart(canvasId, data, column) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            
+            charts[canvasId] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map((_, index) => `Point ${index + 1}`),
+                    datasets: [{
+                        label: column,
+                        data: data.map(row => parseFloat(row[column]) || 0),
+                        borderColor: 'rgba(118, 75, 162, 1)',
+                        backgroundColor: 'rgba(118, 75, 162, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+        
+        function createScatterChart(canvasId, data, xColumn, yColumn) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            
+            charts[canvasId] = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: `${xColumn} vs ${yColumn}`,
+                        data: data.map(row => ({
+                            x: parseFloat(row[xColumn]) || 0,
+                            y: parseFloat(row[yColumn]) || 0
+                        })),
+                        backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                        borderColor: 'rgba(255, 99, 132, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: xColumn
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: yColumn
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function createPieChart(canvasId, data, column) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            
+            // Count occurrences
+            const counts = {};
+            data.forEach(row => {
+                const value = row[column] || 'Unknown';
+                counts[value] = (counts[value] || 0) + 1;
+            });
+            
+            const colors = [
+                'rgba(255, 99, 132, 0.8)',
+                'rgba(54, 162, 235, 0.8)',
+                'rgba(255, 205, 86, 0.8)',
+                'rgba(75, 192, 192, 0.8)',
+                'rgba(153, 102, 255, 0.8)',
+                'rgba(255, 159, 64, 0.8)'
+            ];
+            
+            charts[canvasId] = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(counts),
+                    datasets: [{
+                        data: Object.values(counts),
+                        backgroundColor: colors,
+                        borderColor: colors.map(color => color.replace('0.8', '1')),
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+        
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 3000);
+            }
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initDashboard);
+    </script>
+</body>
+</html>

@@ -1,0 +1,1615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ML Dashboard - Bulletproof Layout</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html {
+            height: 100%;
+            overflow-x: hidden;
+        }
+        
+        body {
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            overflow-x: hidden;
+        }
+        
+        .page-wrapper {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            max-width: 100vw;
+            overflow-x: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+        
+        .header h1 {
+            font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        .status-bar {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9em;
+        }
+        
+        .controls {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .control-group label {
+            font-weight: 600;
+            color: #555;
+            font-size: 0.85em;
+        }
+        
+        .control-group select,
+        .control-group input,
+        .control-group button {
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        
+        .control-group button {
+            background: #667eea;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .control-group button:hover {
+            background: #5a6fd8;
+        }
+        
+        .kpis {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .kpi-card {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .kpi-value {
+            font-size: 1.6em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 4px;
+        }
+        
+        .kpi-label {
+            font-size: 0.8em;
+            color: #666;
+        }
+        
+        .charts-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .chart-box {
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 15px;
+            /* CRITICAL: Fixed dimensions to prevent expansion */
+            height: 300px;
+            min-height: 300px;
+            max-height: 300px;
+            overflow: hidden;
+        }
+        
+        .chart-title {
+            font-size: 1em;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+            text-align: center;
+        }
+        
+        .chart-wrapper {
+            position: relative;
+            /* CRITICAL: Fixed size container for Chart.js */
+            height: 250px;
+            width: 100%;
+            overflow: hidden;
+        }
+        
+        .chart-canvas {
+            /* CRITICAL: Absolute positioning with fixed dimensions */
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            max-width: 100% !important;
+            max-height: 100% !important;
+        }
+        
+        .data-section {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            /* CRITICAL: Fixed height to prevent table expansion */
+            height: 350px;
+            overflow: hidden;
+        }
+        
+        .data-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .table-container {
+            height: 300px;
+            overflow: auto;
+            border: 1px solid #eee;
+            border-radius: 4px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85em;
+        }
+        
+        th, td {
+            padding: 8px 10px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #555;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100px;
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        /* LIDA AI Assistant Styles */
+        .lida-panel {
+            position: fixed;
+            top: 0;
+            right: -600px;
+            width: 580px;
+            height: 100vh;
+            background: #ffffff;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+            z-index: 1000;
+            transition: right 0.3s ease;
+            overflow-y: auto;
+        }
+        
+        .lida-panel.active {
+            right: 0;
+        }
+        
+        .lida-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .lida-header h3 {
+            margin: 0;
+            font-size: 1.2em;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .close-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .lida-content {
+            padding: 20px;
+        }
+        
+        .lida-section {
+            margin-bottom: 25px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+        
+        .lida-section:last-child {
+            border-bottom: none;
+        }
+        
+        .lida-section h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 1em;
+        }
+        
+        .lida-section textarea {
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            font-size: 0.9em;
+            resize: vertical;
+            font-family: inherit;
+        }
+        
+        .lida-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-top: 10px;
+            transition: opacity 0.2s;
+        }
+        
+        .lida-btn:hover {
+            opacity: 0.9;
+        }
+        
+        .lida-section pre {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px;
+            font-size: 0.85em;
+            overflow-x: auto;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        #lidaGoals {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px;
+            font-size: 0.9em;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        #lidaExplanation {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+        
+        .goals-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .goal-item {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .goal-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+        }
+        
+        .goal-item strong {
+            color: #333;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .goal-item p {
+            margin: 5px 0;
+            color: #667eea;
+            font-style: italic;
+        }
+        
+        .goal-item small {
+            color: #666;
+            font-size: 0.8em;
+        }
+        
+        .loading::after {
+            content: '';
+            margin-left: 10px;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ddd;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 15px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .kpis {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .kpis {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 1.4em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <div class="header">
+            <h1>🧠 ML-Powered Dashboard</h1>
+            <p>Business Intelligence with Machine Learning</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="status-bar">
+                <span>🎯</span>
+                <span>ML Intelligence Active</span>
+                <span style="margin-left: auto;">
+                    <span style="display: inline-block; width: 8px; height: 8px; background: #ffffff; border-radius: 50%; margin-right: 6px;"></span>
+                    Connected
+                </span>
+            </div>
+            
+            <div class="controls">
+                <div class="control-group">
+                    <label>Data Source</label>
+                    <select id="dataSource">
+                        <option value="nft">NFT Sales Dataset</option>
+                        <option value="amazon">Amazon Sales Dataset</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label>Group By</label>
+                    <select id="groupBy">
+                        <option value="auto">Auto (ML Detected)</option>
+                        <option value="collections">Collections</option>
+                        <option value="sales">Sales Range</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label>Top N</label>
+                    <input type="number" id="topN" value="10" min="5" max="20">
+                </div>
+                
+                <div class="control-group">
+                    <label>&nbsp;</label>
+                    <button onclick="refreshData()">🔄 Refresh</button>
+                </div>
+                
+                <div class="control-group">
+                    <label>&nbsp;</label>
+                    <button onclick="exportData()">📊 Export</button>
+                </div>
+                
+                <div class="control-group">
+                    <label>&nbsp;</label>
+                    <button onclick="toggleLIDAPanel()">🤖 AI Insights</button>
+                </div>
+            </div>
+            
+            <!-- LIDA AI Assistant Panel -->
+            <div class="lida-panel" id="lidaPanel" style="display: none;">
+                <div class="lida-header">
+                    <h3>🤖 LIDA AI Assistant</h3>
+                    <button onclick="toggleLIDAPanel()" class="close-btn">✕</button>
+                </div>
+                <div class="lida-content">
+                    <div class="lida-section">
+                        <h4>📝 Natural Language Query</h4>
+                        <textarea id="lidaQuery" placeholder="Ask me to create visualizations... e.g., 'Show me sales trends over time' or 'Create a bar chart comparing departments'" rows="3"></textarea>
+                        <button onclick="processLIDAQuery()" class="lida-btn">Generate Visualization</button>
+                    </div>
+                    
+                    <div class="lida-section">
+                        <h4>🎯 AI-Generated Goals</h4>
+                        <div id="lidaGoals">Click "Generate Goals" to see AI recommendations...</div>
+                        <button onclick="generateLIDAGoals()" class="lida-btn">Generate Goals</button>
+                    </div>
+                    
+                    <div class="lida-section">
+                        <h4>📊 Generated Code</h4>
+                        <pre id="lidaCode">AI-generated visualization code will appear here...</pre>
+                    </div>
+                    
+                    <div class="lida-section">
+                        <h4>💡 AI Explanation</h4>
+                        <div id="lidaExplanation">AI explanation of the visualization will appear here...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="kpis">
+                <div class="kpi-card">
+                    <div class="kpi-value" id="totalRecords">250</div>
+                    <div class="kpi-label">Total Records</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value" id="totalValue">$8.6B</div>
+                    <div class="kpi-label">Total Value</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value" id="avgValue">$1.7B</div>
+                    <div class="kpi-label">Average Value</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value" id="dataQuality">94%</div>
+                    <div class="kpi-label">Data Quality</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value" id="mlConfidence">87%</div>
+                    <div class="kpi-label">ML Confidence</div>
+                </div>
+            </div>
+            
+            <div class="charts-section">
+                <div class="chart-box">
+                    <div class="chart-title">📈 Trend Analysis</div>
+                    <div class="chart-wrapper">
+                        <canvas id="trendChart" class="chart-canvas"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-box">
+                    <div class="chart-title">🥧 Distribution</div>
+                    <div class="chart-wrapper">
+                        <canvas id="pieChart" class="chart-canvas"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-box">
+                    <div class="chart-title">🏆 Top Performers</div>
+                    <div class="chart-wrapper">
+                        <canvas id="barChart" class="chart-canvas"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-box">
+                    <div class="chart-title">🧠 Quality Score</div>
+                    <div class="chart-wrapper">
+                        <canvas id="radarChart" class="chart-canvas"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="data-section">
+                <div class="data-title">📋 Data Table</div>
+                <div class="table-container" id="tableContainer">
+                    <div class="loading">Loading data...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let charts = {};
+        let currentData = [];
+        let allDatasets = {
+            nft: [],
+            amazon: []
+        };
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            initCharts();
+            loadAvailableDatasets();
+            setupEventListeners();
+            
+            // Initialize LIDA AI Assistant
+            initializeLIDA();
+        });
+        
+        function setupEventListeners() {
+            document.getElementById('dataSource').addEventListener('change', handleDataSourceChange);
+            document.getElementById('groupBy').addEventListener('change', handleGroupByChange);
+            document.getElementById('topN').addEventListener('change', handleTopNChange);
+        }
+        
+        async function loadAvailableDatasets() {
+            try {
+                console.log('🔍 Attempting to load datasets from API...');
+                const response = await fetch('/api/datasets');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const datasets = await response.json();
+                console.log('✅ Available datasets:', datasets);
+                
+                // Load initial dataset
+                await loadDataset('nft_sales.csv');
+                
+            } catch (error) {
+                console.warn('⚠️ Could not load from API, using sample data. Error:', error);
+                loadSampleData();
+            }
+        }
+        
+        async function loadDataset(datasetName) {
+            try {
+                console.log(`🔄 Loading dataset: ${datasetName}`);
+                showLoading();
+                
+                const response = await fetch(`/api/data/${datasetName}?limit=50`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                console.log('📊 Dataset response:', result);
+                
+                if (result.data && result.data.length > 0) {
+                    currentData = result.data;
+                    console.log(`✅ Loaded ${currentData.length} records`);
+                    updateDashboard();
+                } else {
+                    throw new Error('No data received');
+                }
+                
+            } catch (error) {
+                console.warn('⚠️ Could not load dataset, using sample data. Error:', error);
+                loadSampleData();
+            }
+        }
+        
+        function loadSampleData() {
+            currentData = [
+                {Collections: 'Axie Infinity', Sales: '3328148500', Buyers: '1079811', Txns: '9755511'},
+                {Collections: 'CryptoPunks', Sales: '1664246968', Buyers: '4723', Txns: '18961'},
+                {Collections: 'Art Blocks', Sales: '1075223906', Buyers: '20934', Txns: '117602'},
+                {Collections: 'BAYC', Sales: '783882186', Buyers: '8284', Txns: '22584'},
+                {Collections: 'NBA Top Shot', Sales: '781965423', Buyers: '374818', Txns: '11790699'}
+            ];
+            updateDashboard();
+        }
+        
+        function showLoading() {
+            document.getElementById('tableContainer').innerHTML = '<div class="loading">Loading data...</div>';
+        }
+        
+        function handleDataSourceChange() {
+            const dataSource = document.getElementById('dataSource').value;
+            console.log('Data source changed to:', dataSource);
+            
+            if (dataSource === 'nft') {
+                loadDataset('nft_sales.csv');
+            } else if (dataSource === 'amazon') {
+                loadDataset('amazon_sales_dataset.csv');
+            }
+        }
+        
+        function handleGroupByChange() {
+            const groupBy = document.getElementById('groupBy').value;
+            console.log('Group by changed to:', groupBy);
+            updateCharts();
+        }
+        
+        function handleTopNChange() {
+            const topN = parseInt(document.getElementById('topN').value);
+            console.log('Top N changed to:', topN);
+            updateCharts();
+        }
+        
+        function updateDashboard() {
+            updateKPIs();
+            updateCharts();
+            updateTable();
+            
+            // Perform advanced analytics
+            const analytics = displayAdvancedAnalytics();
+            
+            // Log ML insights for user visibility
+            console.log('🤖 ML Dashboard Intelligence:');
+            console.log(`✅ Data Quality: ${calculateDataQuality()}%`);
+            console.log(`🧠 ML Confidence: ${analytics.enhancedConfidence}%`);
+            console.log(`📈 Trend: ${analytics.trend.trend} (${analytics.trend.correlation} correlation)`);
+            console.log(`🔮 Forecast: ${analytics.forecast.forecast} (${analytics.forecast.confidence}% confidence)`);
+            
+            if (analytics.anomalies.length > 0) {
+                console.log(`⚠️ Anomalies detected: ${analytics.anomalies.length} outliers found`);
+                analytics.anomalies.forEach((anomaly, index) => {
+                    console.log(`  ${index + 1}. Record ${anomaly.index}: ${formatCurrency(anomaly.value)} (z-score: ${anomaly.zScore})`);
+                });
+            }
+        }
+        
+        function updateKPIs() {
+            const totalRecords = currentData.length;
+            
+            // Try to find numeric columns for calculations  
+            let totalValue = 0;
+            let avgValue = 0;
+            let departmentCount = 0;
+            
+            if (currentData.length > 0) {
+                const firstRecord = currentData[0];
+                const keys = Object.keys(firstRecord);
+                
+                // Look for sales/revenue column - prioritize common names like JavaFX
+                const salesKey = keys.find(key => 
+                    key.toLowerCase().includes('weekly_sales') ||
+                    key.toLowerCase().includes('sales') || 
+                    key.toLowerCase().includes('revenue') ||
+                    key.toLowerCase().includes('amount')
+                );
+                
+                // Look for department/category column  
+                const deptKey = keys.find(key => 
+                    key.toLowerCase().includes('dept') ||
+                    key.toLowerCase().includes('department') ||
+                    key.toLowerCase().includes('category') ||
+                    key.toLowerCase().includes('collections')
+                );
+                
+                if (salesKey) {
+                    totalValue = currentData.reduce((sum, item) => {
+                        const value = parseFloat(item[salesKey].toString().replace(/[,$]/g, '')) || 0;
+                        return sum + value;
+                    }, 0);
+                    avgValue = totalValue / totalRecords;
+                }
+                
+                if (deptKey) {
+                    const departments = new Set();
+                    currentData.forEach(item => {
+                        const dept = item[deptKey];
+                        if (dept && dept.toString().trim()) {
+                            departments.add(dept.toString().trim());
+                        }
+                    });
+                    departmentCount = departments.size;
+                }
+            }
+            
+            // Update KPIs with proper formatting (no scientific notation)
+            document.getElementById('totalRecords').textContent = formatNumber(totalRecords);
+            document.getElementById('totalValue').textContent = formatCurrency(totalValue);
+            document.getElementById('avgValue').textContent = formatCurrency(avgValue);
+            
+            // Calculate data quality based on completeness
+            const dataQuality = calculateDataQuality();
+            document.getElementById('dataQuality').textContent = dataQuality + '%';
+            
+            // Calculate ML confidence based on data consistency
+            const mlConfidence = calculateMLConfidence();
+            document.getElementById('mlConfidence').textContent = mlConfidence + '%';
+        }
+        
+        function formatCurrency(value) {
+            if (value === 0) return '$0';
+            if (value >= 1000000000) {
+                return '$' + (value / 1000000000).toFixed(1) + 'B';
+            } else if (value >= 1000000) {
+                return '$' + (value / 1000000).toFixed(1) + 'M';
+            } else if (value >= 1000) {
+                return '$' + (value / 1000).toFixed(1) + 'K';
+            } else {
+                return '$' + value.toFixed(2);
+            }
+        }
+        
+        function formatNumber(value) {
+            if (value >= 1000000000) {
+                return (value / 1000000000).toFixed(1) + 'B';
+            } else if (value >= 1000000) {
+                return (value / 1000000).toFixed(1) + 'M';
+            } else if (value >= 1000) {
+                return (value / 1000).toFixed(1) + 'K';
+            } else {
+                return value.toString();
+            }
+        }
+        
+        function calculateMLConfidence() {
+            if (currentData.length === 0) return 0;
+            
+            // Calculate confidence based on data pattern recognition
+            let confidence = 85; // Base confidence
+            
+            // Boost confidence if we have good numeric data
+            if (currentData.length > 100) confidence += 5;
+            if (currentData.length > 1000) confidence += 5;
+            
+            // Check for consistent data types
+            const consistentColumns = Object.keys(currentData[0]).filter(key => {
+                const values = currentData.slice(0, 10).map(row => row[key]);
+                const types = [...new Set(values.map(v => typeof v))];
+                return types.length === 1;
+            });
+            
+            confidence = Math.min(95, confidence + (consistentColumns.length * 2));
+            
+            return Math.max(70, Math.round(confidence));
+        }
+        
+        // Advanced Analytics Features
+        function performTrendAnalysis() {
+            if (currentData.length < 5) return { trend: 'insufficient_data', direction: 0 };
+            
+            const keys = Object.keys(currentData[0]);
+            const salesKey = keys.find(key => 
+                key.toLowerCase().includes('weekly_sales') ||
+                key.toLowerCase().includes('sales') || 
+                key.toLowerCase().includes('revenue')
+            );
+            
+            if (!salesKey) return { trend: 'no_numeric_data', direction: 0 };
+            
+            // Calculate trend using linear regression
+            const values = currentData.slice(0, 20).map((item, index) => ({
+                x: index,
+                y: parseFloat(item[salesKey].toString().replace(/[,$]/g, '')) || 0
+            }));
+            
+            const n = values.length;
+            const sumX = values.reduce((sum, p) => sum + p.x, 0);
+            const sumY = values.reduce((sum, p) => sum + p.y, 0);
+            const sumXY = values.reduce((sum, p) => sum + (p.x * p.y), 0);
+            const sumXX = values.reduce((sum, p) => sum + (p.x * p.x), 0);
+            
+            const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+            const direction = slope > 0 ? 'increasing' : slope < 0 ? 'decreasing' : 'stable';
+            
+            return {
+                trend: direction,
+                direction: slope,
+                correlation: Math.abs(slope) > 1000 ? 'strong' : Math.abs(slope) > 100 ? 'moderate' : 'weak'
+            };
+        }
+        
+        function detectAnomalies() {
+            if (currentData.length < 10) return [];
+            
+            const keys = Object.keys(currentData[0]);
+            const numericKey = keys.find(key => 
+                !isNaN(parseFloat(currentData[0][key].toString().replace(/[,$]/g, '')))
+            );
+            
+            if (!numericKey) return [];
+            
+            const values = currentData.map(item => 
+                parseFloat(item[numericKey].toString().replace(/[,$]/g, '')) || 0
+            );
+            
+            const mean = values.reduce((sum, val) => sum + val, 0) / values.length;
+            const stdDev = Math.sqrt(
+                values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length
+            );
+            
+            const anomalies = [];
+            values.forEach((value, index) => {
+                const zScore = Math.abs((value - mean) / stdDev);
+                if (zScore > 2.5) { // Values beyond 2.5 standard deviations
+                    anomalies.push({
+                        index,
+                        value,
+                        zScore: zScore.toFixed(2),
+                        severity: zScore > 3 ? 'high' : 'medium'
+                    });
+                }
+            });
+            
+            return anomalies.slice(0, 5); // Return top 5 anomalies
+        }
+        
+        function generateForecast() {
+            const trendAnalysis = performTrendAnalysis();
+            
+            if (trendAnalysis.trend === 'insufficient_data') {
+                return { forecast: 'Insufficient data for forecasting', confidence: 0 };
+            }
+            
+            const keys = Object.keys(currentData[0]);
+            const salesKey = keys.find(key => 
+                key.toLowerCase().includes('weekly_sales') ||
+                key.toLowerCase().includes('sales') || 
+                key.toLowerCase().includes('revenue')
+            );
+            
+            const recentValues = currentData.slice(0, 10).map(item =>
+                parseFloat(item[salesKey].toString().replace(/[,$]/g, '')) || 0
+            );
+            
+            const avgRecent = recentValues.reduce((sum, val) => sum + val, 0) / recentValues.length;
+            const projectedGrowth = trendAnalysis.direction * 0.1; // 10% of trend slope
+            const forecastValue = avgRecent + projectedGrowth;
+            
+            return {
+                forecast: formatCurrency(forecastValue),
+                trend: trendAnalysis.trend,
+                confidence: trendAnalysis.correlation === 'strong' ? 85 : 
+                           trendAnalysis.correlation === 'moderate' ? 70 : 55
+            };
+        }
+        
+        function calculateStatisticalInsights() {
+            if (currentData.length === 0) return {};
+            
+            const keys = Object.keys(currentData[0]);
+            const numericColumns = keys.filter(key => {
+                const testValue = currentData[0][key];
+                return !isNaN(parseFloat(testValue.toString().replace(/[,$]/g, '')));
+            });
+            
+            const insights = {};
+            
+            numericColumns.forEach(column => {
+                const values = currentData.map(item => 
+                    parseFloat(item[column].toString().replace(/[,$]/g, '')) || 0
+                ).filter(val => val > 0);
+                
+                if (values.length === 0) return;
+                
+                const sorted = [...values].sort((a, b) => a - b);
+                const sum = values.reduce((sum, val) => sum + val, 0);
+                const mean = sum / values.length;
+                const median = sorted[Math.floor(sorted.length / 2)];
+                const min = Math.min(...values);
+                const max = Math.max(...values);
+                const range = max - min;
+                
+                // Calculate variance and standard deviation
+                const variance = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length;
+                const stdDev = Math.sqrt(variance);
+                
+                insights[column] = {
+                    mean: formatNumber(mean),
+                    median: formatNumber(median),
+                    min: formatNumber(min),
+                    max: formatNumber(max),
+                    range: formatNumber(range),
+                    stdDev: formatNumber(stdDev),
+                    coefficientOfVariation: ((stdDev / mean) * 100).toFixed(1) + '%'
+                };
+            });
+            
+            return insights;
+        }
+        
+        function calculateDataQuality() {
+            if (currentData.length === 0) return 0;
+            
+            const totalFields = currentData.length * Object.keys(currentData[0]).length;
+            let completedFields = 0;
+            
+            currentData.forEach(record => {
+                Object.values(record).forEach(value => {
+                    if (value !== null && value !== undefined && value !== '') {
+                        completedFields++;
+                    }
+                });
+            });
+            
+            return Math.round((completedFields / totalFields) * 100);
+        }
+        
+        function updateCharts() {
+            if (currentData.length === 0) return;
+            
+            const topN = parseInt(document.getElementById('topN').value) || 5;
+            const limitedData = currentData.slice(0, topN);
+            
+            // Try to find key columns like JavaFX dashboard
+            const keys = Object.keys(currentData[0]);
+            const salesKey = keys.find(key => 
+                key.toLowerCase().includes('weekly_sales') ||
+                key.toLowerCase().includes('sales') || 
+                key.toLowerCase().includes('revenue')
+            );
+            const dateKey = keys.find(key => 
+                key.toLowerCase().includes('date') ||
+                key.toLowerCase().includes('time')
+            );
+            const deptKey = keys.find(key => 
+                key.toLowerCase().includes('dept') ||
+                key.toLowerCase().includes('department') ||
+                key.toLowerCase().includes('collections')
+            );
+            
+            // Update trend chart (Sales Over Time like JavaFX)
+            if (salesKey && dateKey) {
+                // Group by time periods for trend analysis
+                const timeGroups = {};
+                currentData.forEach(item => {
+                    const date = item[dateKey] || 'Unknown';
+                    const period = date.length >= 7 ? date.substring(0, 7) : date; // YYYY-MM format
+                    if (!timeGroups[period]) timeGroups[period] = 0;
+                    
+                    const sales = parseFloat(item[salesKey].toString().replace(/[,$]/g, '')) || 0;
+                    timeGroups[period] += sales;
+                });
+                
+                const trendLabels = Object.keys(timeGroups).sort().slice(0, 10);
+                const trendValues = trendLabels.map(period => timeGroups[period] / 1000000); // Convert to millions
+                
+                charts.trend.data.labels = trendLabels;
+                charts.trend.data.datasets[0].data = trendValues;
+                charts.trend.data.datasets[0].label = 'Sales (Millions)';
+            } else {
+                // Fallback trend for other data types
+                const trendLabels = limitedData.map((item, index) => {
+                    const nameKey = keys.find(key => 
+                        key.toLowerCase().includes('name') ||
+                        key.toLowerCase().includes('collection') ||
+                        key.toLowerCase().includes('title')
+                    ) || keys[0];
+                    
+                    const name = item[nameKey].toString();
+                    return name.length > 8 ? name.substring(0, 8) + '...' : name;
+                });
+                
+                const trendValues = limitedData.map(item => {
+                    const numericKey = keys.find(key => 
+                        !isNaN(parseFloat(item[key].toString().replace(/[,$]/g, '')))
+                    );
+                    
+                    if (numericKey) {
+                        return parseFloat(item[numericKey].toString().replace(/[,$]/g, '')) / 1000000;
+                    }
+                    return Math.random() * 100;
+                });
+                
+                charts.trend.data.labels = trendLabels;
+                charts.trend.data.datasets[0].data = trendValues;
+                charts.trend.data.datasets[0].label = 'Value (Millions)';
+            }
+            
+            charts.trend.update('none');
+            
+            // Update pie chart (Sales by Department/Category like JavaFX)
+            if (salesKey && deptKey) {
+                const deptGroups = {};
+                currentData.forEach(item => {
+                    const dept = item[deptKey] || 'Unknown';
+                    if (!deptGroups[dept]) deptGroups[dept] = 0;
+                    
+                    const sales = parseFloat(item[salesKey].toString().replace(/[,$]/g, '')) || 0;
+                    deptGroups[dept] += sales;
+                });
+                
+                // Get top N departments
+                const sortedDepts = Object.entries(deptGroups)
+                    .sort(([,a], [,b]) => b - a)
+                    .slice(0, topN);
+                
+                const pieLabels = sortedDepts.map(([dept]) => {
+                    const label = dept.toString();
+                    return label.length > 12 ? label.substring(0, 12) + '...' : label;
+                });
+                const pieValues = sortedDepts.map(([,sales]) => sales / 1000000);
+                
+                charts.pie.data.labels = pieLabels;
+                charts.pie.data.datasets[0].data = pieValues;
+            } else {
+                // Fallback pie chart
+                const pieLabels = limitedData.map(item => {
+                    const nameKey = keys.find(key => 
+                        key.toLowerCase().includes('name') ||
+                        key.toLowerCase().includes('collection') ||
+                        key.toLowerCase().includes('title')
+                    ) || keys[0];
+                    
+                    const name = item[nameKey].toString();
+                    return name.length > 12 ? name.substring(0, 12) + '...' : name;
+                });
+                
+                const pieValues = limitedData.map(item => {
+                    const numericKey = keys.find(key => 
+                        !isNaN(parseFloat(item[key].toString().replace(/[,$]/g, '')))
+                    );
+                    
+                    if (numericKey) {
+                        return parseFloat(item[numericKey].toString().replace(/[,$]/g, '')) / 1000000;
+                    }
+                    return Math.random() * 1000 + 100;
+                });
+                
+                charts.pie.data.labels = pieLabels;
+                charts.pie.data.datasets[0].data = pieValues;
+            }
+            
+            charts.pie.update('none');
+            
+            // Update bar chart (Top Performers like JavaFX)
+            charts.bar.data.labels = charts.pie.data.labels;
+            charts.bar.data.datasets[0].data = charts.pie.data.datasets[0].data;
+            charts.bar.update('none');
+            
+            // Update radar chart with quality metrics like JavaFX ML intelligence
+            const qualityScore = calculateDataQuality();
+            const completenessScore = Math.min(100, (currentData.length / 1000) * 100);
+            const consistencyScore = calculateMLConfidence(); 
+            const accuracyScore = Math.min(100, qualityScore + 10);
+            const reliabilityScore = Math.max(70, Math.min(95, (qualityScore + consistencyScore) / 2));
+            
+            charts.radar.data.datasets[0].data = [
+                qualityScore, completenessScore, consistencyScore, accuracyScore, reliabilityScore
+            ];
+            charts.radar.update('none');
+        }
+        
+        function updateTable() {
+            if (currentData.length === 0) {
+                document.getElementById('tableContainer').innerHTML = '<div class="loading">No data available</div>';
+                return;
+            }
+            
+            const topN = parseInt(document.getElementById('topN').value) || 10;
+            const limitedData = currentData.slice(0, topN);
+            const keys = Object.keys(limitedData[0]);
+            
+            let tableHTML = '<table><thead><tr>';
+            
+            // Create headers
+            keys.forEach(key => {
+                const displayName = key.charAt(0).toUpperCase() + key.slice(1);
+                tableHTML += `<th>${displayName}</th>`;
+            });
+            
+            tableHTML += '</tr></thead><tbody>';
+            
+            // Create rows
+            limitedData.forEach(item => {
+                tableHTML += '<tr>';
+                keys.forEach(key => {
+                    let value = item[key];
+                    
+                    // Format large numbers
+                    if (!isNaN(parseFloat(value.toString().replace(/[,$]/g, '')))) {
+                        const numValue = parseFloat(value.toString().replace(/[,$]/g, ''));
+                        if (numValue > 1000000) {
+                            value = '$' + (numValue / 1000000).toFixed(1) + 'M';
+                        } else if (numValue > 1000) {
+                            value = (numValue / 1000).toFixed(0) + 'K';
+                        } else if (key.toLowerCase().includes('sales') || key.toLowerCase().includes('revenue')) {
+                            value = '$' + numValue.toLocaleString();
+                        } else {
+                            value = numValue.toLocaleString();
+                        }
+                    }
+                    
+                    tableHTML += `<td>${value}</td>`;
+                });
+                tableHTML += '</tr>';
+            });
+            
+            tableHTML += '</tbody></table>';
+            document.getElementById('tableContainer').innerHTML = tableHTML;
+        }
+        
+        function initCharts() {
+            // CRITICAL: Use specific sizing options to prevent expansion
+            const chartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 12,
+                            font: {
+                                size: 10
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                // Format values without scientific notation
+                                const value = context.parsed.y || context.parsed;
+                                if (value >= 1000) {
+                                    label += '$' + (value).toFixed(1) + 'M';
+                                } else if (value >= 1) {
+                                    label += '$' + value.toFixed(2) + 'M';
+                                } else {
+                                    label += '$' + (value * 1000).toFixed(0) + 'K';
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                // CRITICAL: Prevent animation issues that can cause expansion
+                animation: {
+                    duration: 0
+                }
+            };
+            
+            // Trend Chart (Sales Over Time like JavaFX)
+            charts.trend = new Chart(document.getElementById('trendChart'), {
+                type: 'line',
+                data: {
+                    labels: ['2024-01', '2024-02', '2024-03', '2024-04', '2024-05', '2024-06'],
+                    datasets: [{
+                        label: 'Sales (Millions)',
+                        data: [2800, 3100, 3400, 3200, 3600, 3800],
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    ...chartOptions,
+                    scales: {
+                        y: { 
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    // Format Y-axis labels without scientific notation
+                                    if (value >= 1000) {
+                                        return (value / 1000).toFixed(1) + 'B';
+                                    } else if (value >= 1) {
+                                        return value.toFixed(0) + 'M';
+                                    } else {
+                                        return (value * 1000).toFixed(0) + 'K';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Pie Chart (Sales by Department like JavaFX)
+            charts.pie = new Chart(document.getElementById('pieChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Axie Infinity', 'CryptoPunks', 'Art Blocks', 'BAYC', 'NBA Top Shot'],
+                    datasets: [{
+                        data: [3328, 1664, 1075, 784, 782],
+                        backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe']
+                    }]
+                },
+                options: chartOptions
+            });
+            
+            // Bar Chart (Top Performers like JavaFX)
+            charts.bar = new Chart(document.getElementById('barChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Axie Infinity', 'CryptoPunks', 'Art Blocks', 'BAYC', 'NBA Top Shot'],
+                    datasets: [{
+                        label: 'Sales (Millions)',
+                        data: [3328, 1664, 1075, 784, 782],
+                        backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                        borderColor: '#667eea',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    ...chartOptions,
+                    scales: {
+                        y: { 
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    // Format Y-axis labels without scientific notation
+                                    if (value >= 1000) {
+                                        return (value / 1000).toFixed(1) + 'B';
+                                    } else if (value >= 1) {
+                                        return value.toFixed(0) + 'M';
+                                    } else {
+                                        return (value * 1000).toFixed(0) + 'K';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Radar Chart (Quality Score like JavaFX ML Intelligence)
+            charts.radar = new Chart(document.getElementById('radarChart'), {
+                type: 'radar',
+                data: {
+                    labels: ['Quality', 'Complete', 'Consistent', 'Accurate', 'Reliable'],
+                    datasets: [{
+                        label: 'ML Score',
+                        data: [94, 92, 78, 95, 87],
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#667eea'
+                    }]
+                },
+                options: {
+                    ...chartOptions,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                stepSize: 20,
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Radar Chart (Quality Score like JavaFX ML Intelligence)
+            charts.radar = new Chart(document.getElementById('radarChart'), {
+                type: 'radar',
+                data: {
+                    labels: ['Quality', 'Complete', 'Consistent', 'Accurate', 'Reliable'],
+                    datasets: [{
+                        label: 'ML Score',
+                        data: [94, 92, 78, 95, 87],
+                        backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                        borderColor: '#667eea',
+                        pointBackgroundColor: '#667eea',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    ...chartOptions,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                stepSize: 20,
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function loadData() {
+            // This function is now replaced by loadAvailableDatasets()
+            loadAvailableDatasets();
+        }
+        
+        function refreshData() {
+            console.log('Refreshing data...');
+            const currentDataSource = document.getElementById('dataSource').value;
+            
+            showLoading();
+            
+            // Add a small delay to show loading state
+            setTimeout(() => {
+                if (currentDataSource === 'nft') {
+                    loadDataset('nft_sales.csv');
+                } else if (currentDataSource === 'amazon') {
+                    loadDataset('amazon_sales_dataset.csv');
+                } else {
+                    loadSampleData();
+                }
+            }, 500);
+        }
+        
+        function exportData() {
+            if (currentData.length === 0) {
+                alert('No data to export');
+                return;
+            }
+            
+            const dataStr = JSON.stringify(currentData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'dashboard-data.json';
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        // LIDA AI Assistant Functions
+        let lidaStatus = { available: false, manager_initialized: false };
+        
+        async function initializeLIDA() {
+            try {
+                const response = await fetch('/api/lida/status');
+                lidaStatus = await response.json();
+                console.log('🤖 LIDA Status:', lidaStatus);
+                
+                if (lidaStatus.lida_available) {
+                    console.log('✅ LIDA AI Assistant is available');
+                } else {
+                    console.warn('⚠️ LIDA AI Assistant is not available');
+                }
+            } catch (error) {
+                console.error('❌ Failed to initialize LIDA:', error);
+            }
+        }
+        
+        function toggleLIDAPanel() {
+            const panel = document.getElementById('lidaPanel');
+            const isActive = panel.classList.contains('active');
+            
+            if (isActive) {
+                panel.classList.remove('active');
+                panel.style.display = 'none';
+            } else {
+                panel.style.display = 'block';
+                setTimeout(() => panel.classList.add('active'), 10);
+                
+                if (!lidaStatus.available) {
+                    initializeLIDA();
+                }
+            }
+        }
+        
+        async function generateLIDAGoals() {
+            if (!lidaStatus.lida_available) {
+                document.getElementById('lidaGoals').innerHTML = '❌ LIDA AI Assistant is not available. Please check server configuration.';
+                return;
+            }
+            
+            try {
+                document.getElementById('lidaGoals').innerHTML = '🔄 Generating AI goals...';
+                
+                const currentDataSource = document.getElementById('dataSource').value;
+                const dataset = currentDataSource === 'nft' ? 'nft_sales.csv' : 'amazon_sales_dataset.csv';
+                
+                const response = await fetch(`/api/lida/goals/${dataset}?persona=data_analyst&n=4`);
+                const result = await response.json();
+                
+                if (result.goals) {
+                    let goalsHtml = '<div class="goals-list">';
+                    result.goals.forEach((goal, index) => {
+                        goalsHtml += `
+                            <div class="goal-item" onclick="selectGoal('${goal.question}')">
+                                <strong>${index + 1}. ${goal.question}</strong>
+                                <p><em>${goal.visualization}</em></p>
+                                <small>${goal.rationale}</small>
+                            </div>
+                        `;
+                    });
+                    goalsHtml += '</div>';
+                    document.getElementById('lidaGoals').innerHTML = goalsHtml;
+                } else {
+                    document.getElementById('lidaGoals').innerHTML = '❌ Failed to generate goals';
+                }
+                
+            } catch (error) {
+                console.error('❌ Error generating LIDA goals:', error);
+                document.getElementById('lidaGoals').innerHTML = '❌ Error generating goals: ' + error.message;
+            }
+        }
+        
+        function selectGoal(goalText) {
+            document.getElementById('lidaQuery').value = goalText;
+            processLIDAQuery();
+        }
+        
+        async function processLIDAQuery() {
+            const query = document.getElementById('lidaQuery').value.trim();
+            
+            if (!query) {
+                alert('Please enter a visualization request');
+                return;
+            }
+            
+            if (!lidaStatus.lida_available) {
+                document.getElementById('lidaCode').textContent = 'LIDA AI Assistant is not available';
+                return;
+            }
+            
+            try {
+                document.getElementById('lidaCode').textContent = '🔄 Generating visualization code...';
+                document.getElementById('lidaExplanation').innerHTML = '🔄 Generating explanation...';
+                
+                const response = await fetch('/api/lida/visualize', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        goal: query,
+                        library: 'matplotlib'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.code) {
+                    document.getElementById('lidaCode').textContent = result.code;
+                    document.getElementById('lidaExplanation').innerHTML = `
+                        <strong>Goal:</strong> ${result.goal}<br>
+                        <strong>Library:</strong> ${result.library}<br>
+                        <strong>Generated:</strong> ${new Date(result.timestamp * 1000).toLocaleString()}<br><br>
+                        This visualization was automatically generated by LIDA AI to address your request. 
+                        The code uses ${result.library} to create a chart that answers your question about the data.
+                    `;
+                } else {
+                    document.getElementById('lidaCode').textContent = 'Failed to generate visualization';
+                    document.getElementById('lidaExplanation').innerHTML = 'Error generating explanation';
+                }
+                
+            } catch (error) {
+                console.error('❌ Error processing LIDA query:', error);
+                document.getElementById('lidaCode').textContent = 'Error: ' + error.message;
+                document.getElementById('lidaExplanation').innerHTML = 'Error generating explanation: ' + error.message;
+            }
+        }
+        
+        async function generateLIDAInsights() {
+            // This is a shortcut function to open the LIDA panel and generate goals
+            toggleLIDAPanel();
+            setTimeout(() => {
+                generateLIDAGoals();
+            }, 500);
+        }
+        
+        // Advanced Analytics Display Functions
+        function displayAdvancedAnalytics() {
+            const insights = calculateStatisticalInsights();
+            const anomalies = detectAnomalies();
+            const forecast = generateForecast();
+            const trend = performTrendAnalysis();
+            
+            console.log('📊 Advanced Analytics Results:');
+            console.log('📈 Trend Analysis:', trend);
+            console.log('🔮 Forecast:', forecast);
+            console.log('⚠️ Anomalies Found:', anomalies.length);
+            console.log('📋 Statistical Insights:', Object.keys(insights).length, 'columns analyzed');
+            
+            // Update the data quality KPI with analytics insights
+            const mlConfidence = calculateMLConfidence();
+            const analyticsBoost = trend.correlation === 'strong' ? 5 : 
+                                 trend.correlation === 'moderate' ? 3 : 1;
+            const enhancedConfidence = Math.min(95, mlConfidence + analyticsBoost);
+            
+            document.getElementById('mlConfidence').textContent = enhancedConfidence + '%';
+            
+            // Display insights in console for now (could be expanded to UI)
+            if (Object.keys(insights).length > 0) {
+                console.log('📊 Key Statistics:');
+                Object.entries(insights).forEach(([column, stats]) => {
+                    console.log(`  ${column}:`, stats);
+                });
+            }
+            
+            return {
+                trend,
+                forecast, 
+                anomalies,
+                insights,
+                enhancedConfidence
+            };
+        }
+    </script>
+</body>
+</html>

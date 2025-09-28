@@ -1,0 +1,11 @@
+supplier_id,supplier_name,product_category,country,order_date,delivery_date,order_value,quality_score,delivery_performance,cost_efficiency,risk_score,sustainability_rating
+SUP-0001,Global Supply Co,Raw Materials,USA,2023-03-15,2023-03-25,25000.00,92.5,98.2,87.3,2.1,A
+SUP-0002,Prime Materials Inc,Components,China,2023-03-16,2023-03-28,45000.00,89.7,95.4,91.2,3.4,B
+SUP-0003,Swift Logistics,Packaging,Germany,2023-03-17,2023-03-24,12000.00,94.1,99.1,89.8,1.8,A
+SUP-0004,Quality Parts Ltd,Electronics,Japan,2023-03-18,2023-04-02,67000.00,96.3,92.7,85.6,2.9,A
+SUP-0005,Rapid Delivery Corp,Chemicals,India,2023-03-19,2023-03-30,38000.00,87.9,94.8,88.4,4.2,C
+SUP-0006,Global Supply Co,Components,Mexico,2023-03-20,2023-03-29,29000.00,91.2,96.5,90.1,2.7,B
+SUP-0007,Prime Materials Inc,Raw Materials,Brazil,2023-03-21,2023-04-05,52000.00,88.6,91.3,86.9,3.8,B
+SUP-0008,Swift Logistics,Electronics,USA,2023-03-22,2023-03-27,41000.00,93.8,97.9,92.5,2.3,A
+SUP-0009,Quality Parts Ltd,Packaging,China,2023-03-23,2023-04-01,18000.00,95.4,94.2,87.7,2.6,A
+SUP-0010,Rapid Delivery Corp,Components,Germany,2023-03-24,2023-04-03,33000.00,90.1,93.6,89.3,3.1,B

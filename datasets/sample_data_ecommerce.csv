@@ -1,0 +1,11 @@
+order_id,date,category,region,channel,sales_amount,quantity,discount_percent,customer_segment,profit_margin
+ORD-000001,2023-03-15,Electronics,North America,Online,1245.50,2,15.0,Premium,35.2
+ORD-000002,2023-03-16,Books,Europe,Store,89.99,1,5.0,Standard,25.4
+ORD-000003,2023-03-17,Home & Kitchen,Asia,Mobile App,567.25,3,20.0,Budget,18.7
+ORD-000004,2023-03-18,Sports,South America,Third Party,234.75,1,10.0,Standard,28.9
+ORD-000005,2023-03-19,Clothing,Africa,Online,145.00,2,0.0,Premium,42.1
+ORD-000006,2023-03-20,Beauty,Oceania,Store,78.50,1,25.0,Budget,15.6
+ORD-000007,2023-03-21,Toys,North America,Mobile App,199.99,4,12.0,Standard,31.2
+ORD-000008,2023-03-22,Electronics,Europe,Online,899.00,1,8.0,Premium,38.5
+ORD-000009,2023-03-23,Books,Asia,Store,156.25,3,15.0,Standard,22.8
+ORD-000010,2023-03-24,Home & Kitchen,South America,Third Party,445.75,2,18.0,Budget,19.4

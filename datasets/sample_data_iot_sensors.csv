@@ -1,0 +1,11 @@
+timestamp,sensor_id,sensor_type,location,value,unit,status,battery_level,signal_strength
+2024-01-15 08:30:00,TMP-101,Temperature,Factory Floor,23.5,°C,Online,95,5
+2024-01-15 08:31:00,HUM-102,Humidity,Warehouse,65.2,%,Online,87,4
+2024-01-15 08:32:00,PRS-103,Pressure,Office,1013.2,hPa,Online,92,5
+2024-01-15 08:33:00,MOT-104,Motion,Parking Lot,0,detected,Online,78,3
+2024-01-15 08:34:00,LIG-105,Light,Server Room,450.8,lux,Online,89,4
+2024-01-15 08:35:00,AIR-106,Air Quality,Laboratory,125.6,AQI,Online,91,5
+2024-01-15 08:36:00,TMP-107,Temperature,Warehouse,21.8,°C,Online,84,4
+2024-01-15 08:37:00,HUM-108,Humidity,Factory Floor,58.9,%,Online,96,5
+2024-01-15 08:38:00,PRS-109,Pressure,Laboratory,1015.7,hPa,Maintenance,65,2
+2024-01-15 08:39:00,MOT-110,Motion,Office,1,detected,Online,88,4

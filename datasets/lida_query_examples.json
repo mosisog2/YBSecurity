@@ -1,0 +1,44 @@
+{
+  "ecommerce": [
+    "Show sales trends by category over time",
+    "Compare revenue across different regions",
+    "Which channel generates the highest profit margins?",
+    "Create a correlation analysis between discount and sales amount",
+    "What is the distribution of customer segments?"
+  ],
+  "financial": [
+    "Compare department performance by quarter",
+    "Show profit trends across all departments",
+    "Which department has the best budget variance?",
+    "Analyze productivity vs employee count",
+    "Create a cost efficiency analysis by department"
+  ],
+  "iot_sensors": [
+    "Show temperature trends by location",
+    "Which sensors have the most offline status?",
+    "Compare sensor performance across locations",
+    "Analyze battery levels by sensor type",
+    "Create a signal strength distribution chart"
+  ],
+  "healthcare": [
+    "Compare treatment costs by department",
+    "Show patient satisfaction trends by treatment type",
+    "Analyze readmission rates by age group",
+    "Which insurance type has the highest costs?",
+    "Create an outcome score analysis by department"
+  ],
+  "supply_chain": [
+    "Compare supplier performance by country",
+    "Show quality scores vs delivery performance",
+    "Which product category has the highest risk?",
+    "Analyze cost efficiency by supplier",
+    "Create a sustainability rating distribution"
+  ],
+  "retail": [
+    "Show sales trends over time",
+    "Compare store performance",
+    "Which product category performs best?",
+    "Analyze customer ratings by category",
+    "Create a correlation between economic indicators and sales"
+  ]
+}

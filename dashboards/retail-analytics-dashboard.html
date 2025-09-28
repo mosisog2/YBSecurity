@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retail Analytics Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.2em;
+        }
+        
+        .controls-panel {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 2px solid #dee2e6;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .control-section h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .control-row {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            min-width: 150px;
+        }
+        
+        .control-group label {
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.9em;
+        }
+        
+        .control-group select {
+            padding: 8px 12px;
+            border: 2px solid #ced4da;
+            border-radius: 6px;
+            background: white;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .control-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .btn-primary, .btn-secondary {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #495057;
+            border: 2px solid #dee2e6;
+        }
+        
+        .btn-secondary:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .kpi-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid #667eea;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border-radius: 50%;
+            transform: translate(30px, -30px);
+        }
+        
+        .kpi-icon {
+            font-size: 3em;
+            opacity: 0.8;
+            min-width: 80px;
+            text-align: center;
+        }
+        
+        .kpi-content {
+            flex: 1;
+            z-index: 1;
+        }
+        
+        .kpi-value {
+            font-size: 2.2em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+            line-height: 1;
+        }
+        
+        .kpi-label {
+            color: #6c757d;
+            font-size: 1em;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .kpi-change {
+            font-size: 0.85em;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        
+        .kpi-change.positive {
+            color: #28a745;
+        }
+        
+        .kpi-change.negative {
+            color: #dc3545;
+        }
+        
+        .kpi-progress {
+            width: 100%;
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 3px;
+            transition: width 0.8s ease;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-container.large {
+            grid-column: span 2;
+        }
+        
+        .chart-container {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+        
+        .chart-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .chart-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0;
+        }
+        
+        .chart-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .chart-controls select {
+            padding: 6px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            background: white;
+            font-size: 12px;
+            color: #495057;
+        }
+        
+        .chart-insights {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .insight-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .insight-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .insight-label {
+            font-weight: 600;
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+        
+        .insight-value {
+            font-weight: 700;
+            color: #2c3e50;
+            font-size: 0.9em;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-weight: 500;
+        }
+        
+        .status.loading {
+            background: #e3f2fd;
+            color: #1976d2;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .status.success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            border-left: 4px solid #4caf50;
+        }
+        
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #f44336;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid, .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛒 Advanced Retail Analytics Dashboard</h1>
+            <p>AI-Powered Sales Performance and Business Intelligence</p>
+        </div>
+
+        <!-- Advanced Controls Panel -->
+        <div class="controls-panel">
+            <div class="control-section">
+                <h3>📊 Data Filters & Analysis</h3>
+                <div class="control-row">
+                    <div class="control-group">
+                        <label for="dateFilter">📅 Date Range:</label>
+                        <select id="dateFilter">
+                            <option value="all">All Time</option>
+                            <option value="last30">Last 30 Days</option>
+                            <option value="last90">Last 90 Days</option>
+                            <option value="thisMonth">This Month</option>
+                            <option value="lastMonth">Last Month</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="categoryFilter">🏷️ Category:</label>
+                        <select id="categoryFilter">
+                            <option value="all">All Categories</option>
+                            <option value="electronics">Electronics</option>
+                            <option value="books">Books</option>
+                            <option value="home">Home & Kitchen</option>
+                            <option value="sports">Sports</option>
+                            <option value="clothing">Clothing</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="groupByFilter">📈 Group By:</label>
+                        <select id="groupByFilter">
+                            <option value="category">Product Category</option>
+                            <option value="store">Store Location</option>
+                            <option value="month">Monthly Trends</option>
+                            <option value="segment">Customer Segment</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="topNFilter">🔢 Top N Results:</label>
+                        <select id="topNFilter">
+                            <option value="5">Top 5</option>
+                            <option value="10">Top 10</option>
+                            <option value="15">Top 15</option>
+                            <option value="all">Show All</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="control-row">
+                    <button class="btn-primary" onclick="applyFilters()">🔄 Apply Filters</button>
+                    <button class="btn-secondary" onclick="exportData()">📊 Export Data</button>
+                    <button class="btn-secondary" onclick="generateReport()">📋 Generate Report</button>
+                    <button class="btn-secondary" onclick="performAnalysis()">🤖 AI Analysis</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="status"></div>
+
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-icon">💰</div>
+                <div class="kpi-content">
+                    <div class="kpi-value" id="totalSales">$0</div>
+                    <div class="kpi-label">Total Revenue</div>
+                    <div class="kpi-change positive" id="salesChange">+0% vs target</div>
+                    <div class="kpi-progress">
+                        <div class="progress-bar" id="salesProgress" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="kpi-card">
+                <div class="kpi-icon">📦</div>
+                <div class="kpi-content">
+                    <div class="kpi-value" id="totalOrders">0</div>
+                    <div class="kpi-label">Total Orders</div>
+                    <div class="kpi-change positive" id="ordersChange">+0% vs last period</div>
+                    <div class="kpi-progress">
+                        <div class="progress-bar" id="ordersProgress" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="kpi-card">
+                <div class="kpi-icon">🎯</div>
+                <div class="kpi-content">
+                    <div class="kpi-value" id="avgOrderValue">$0</div>
+                    <div class="kpi-label">Average Order Value</div>
+                    <div class="kpi-change positive" id="aovChange">+0% vs target</div>
+                    <div class="kpi-progress">
+                        <div class="progress-bar" id="aovProgress" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="kpi-card">
+                <div class="kpi-icon">⭐</div>
+                <div class="kpi-content">
+                    <div class="kpi-value" id="customerSat">0.0</div>
+                    <div class="kpi-label">Customer Satisfaction</div>
+                    <div class="kpi-change positive" id="satChange">+0.0 vs last period</div>
+                    <div class="kpi-progress">
+                        <div class="progress-bar" id="satProgress" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="kpi-card">
+                <div class="kpi-icon">🏆</div>
+                <div class="kpi-content">
+                    <div class="kpi-value" id="topCategory">-</div>
+                    <div class="kpi-label">Top Performing Category</div>
+                    <div class="kpi-change" id="categoryShare">0% of total sales</div>
+                    <div class="kpi-progress">
+                        <div class="progress-bar" id="categoryProgress" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="kpi-card">
+                <div class="kpi-icon">📈</div>
+                <div class="kpi-content">
+                    <div class="kpi-value" id="growthRate">0%</div>
+                    <div class="kpi-label">Monthly Growth Rate</div>
+                    <div class="kpi-change positive" id="growthChange">+0% vs target</div>
+                    <div class="kpi-progress">
+                        <div class="progress-bar" id="growthProgress" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="chart-container large">
+                <div class="chart-header">
+                    <div class="chart-title">📈 Revenue & Performance Trends</div>
+                    <div class="chart-controls">
+                        <select id="trendPeriod">
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly" selected>Monthly</option>
+                        </select>
+                    </div>
+                </div>
+                <canvas id="salesTrendChart"></canvas>
+                <div class="chart-insights" id="trendInsights">
+                    <div class="insight-item">
+                        <span class="insight-label">Trend:</span>
+                        <span class="insight-value" id="trendDirection">Analyzing...</span>
+                    </div>
+                    <div class="insight-item">
+                        <span class="insight-label">Peak Period:</span>
+                        <span class="insight-value" id="peakPeriod">-</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-header">
+                    <div class="chart-title">🏪 Store Performance Matrix</div>
+                    <div class="chart-controls">
+                        <select id="storeMetric">
+                            <option value="revenue">Revenue</option>
+                            <option value="orders">Orders</option>
+                            <option value="aov">Avg Order Value</option>
+                        </select>
+                    </div>
+                </div>
+                <canvas id="storePerformanceChart"></canvas>
+                <div class="chart-insights" id="storeInsights">
+                    <div class="insight-item">
+                        <span class="insight-label">Top Performer:</span>
+                        <span class="insight-value" id="topStore">-</span>
+                    </div>
+                    <div class="insight-item">
+                        <span class="insight-label">Growth Leader:</span>
+                        <span class="insight-value" id="growthStore">-</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-header">
+                    <div class="chart-title">📦 Category Performance Analysis</div>
+                    <div class="chart-controls">
+                        <select id="categoryView">
+                            <option value="revenue">By Revenue</option>
+                            <option value="volume">By Volume</option>
+                            <option value="margin">By Margin</option>
+                        </select>
+                    </div>
+                </div>
+                <canvas id="categoryChart"></canvas>
+                <div class="chart-insights" id="categoryInsights">
+                    <div class="insight-item">
+                        <span class="insight-label">Market Leader:</span>
+                        <span class="insight-value" id="leadingCategory">-</span>
+                    </div>
+                    <div class="insight-item">
+                        <span class="insight-label">Fastest Growing:</span>
+                        <span class="insight-value" id="growingCategory">-</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-header">
+                    <div class="chart-title">🎯 Customer Satisfaction & Ratings</div>
+                    <div class="chart-controls">
+                        <select id="ratingPeriod">
+                            <option value="current">Current Period</option>
+                            <option value="comparison">vs Previous</option>
+                        </select>
+                    </div>
+                </div>
+                <canvas id="ratingsChart"></canvas>
+                <div class="chart-insights" id="ratingsInsights">
+                    <div class="insight-item">
+                        <span class="insight-label">Avg Rating:</span>
+                        <span class="insight-value" id="avgRating">-</span>
+                    </div>
+                    <div class="insight-item">
+                        <span class="insight-label">NPS Score:</span>
+                        <span class="insight-value" id="npsScore">-</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-container large">
+                <div class="chart-header">
+                    <div class="chart-title">🔍 Advanced Analytics & Correlation Matrix</div>
+                    <div class="chart-controls">
+                        <select id="correlationView">
+                            <option value="sales_rating">Sales vs Rating</option>
+                            <option value="price_volume">Price vs Volume</option>
+                            <option value="seasonal">Seasonal Patterns</option>
+                        </select>
+                    </div>
+                </div>
+                <canvas id="correlationChart"></canvas>
+                <div class="chart-insights" id="correlationInsights">
+                    <div class="insight-item">
+                        <span class="insight-label">Correlation:</span>
+                        <span class="insight-value" id="correlationStrength">-</span>
+                    </div>
+                    <div class="insight-item">
+                        <span class="insight-label">Key Finding:</span>
+                        <span class="insight-value" id="keyInsight">-</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-header">
+                    <div class="chart-title">📊 Real-time Performance Gauge</div>
+                </div>
+                <canvas id="performanceGauge"></canvas>
+                <div class="chart-insights" id="gaugeInsights">
+                    <div class="insight-item">
+                        <span class="insight-label">Current Score:</span>
+                        <span class="insight-value" id="performanceScore">-</span>
+                    </div>
+                    <div class="insight-item">
+                        <span class="insight-label">vs Target:</span>
+                        <span class="insight-value" id="targetComparison">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let charts = {};
+        let rawData = [];
+        let filteredData = [];
+        let currentFilters = {
+            dateRange: 'all',
+            category: 'all',
+            groupBy: 'category',
+            topN: '10'
+        };
+        
+        // Initialize dashboard
+        async function initDashboard() {
+            showStatus('🔄 Initializing Advanced Retail Analytics...', 'loading');
+            
+            try {
+                // Load raw data first
+                await loadRawData();
+                
+                // Apply initial filters
+                applyFilters();
+                
+                // Load all dashboard components
+                await Promise.all([
+                    loadAdvancedSalesSummary(),
+                    loadStorePerformance(),
+                    loadCategoryAnalysis(),
+                    loadTrends(),
+                    loadCorrelationAnalysis(),
+                    loadPerformanceGauge()
+                ]);
+                
+                // Initialize intelligent insights
+                generateIntelligentInsights();
+                
+                showStatus('✅ Advanced Analytics Dashboard Ready!', 'success');
+                
+                // Start real-time updates
+                startRealTimeUpdates();
+                
+            } catch (error) {
+                showStatus(`❌ Error loading dashboard: ${error.message}`, 'error');
+            }
+        }
+        
+        async function loadRawData() {
+            // Simulate loading comprehensive sales data
+            rawData = generateAdvancedSampleData();
+            filteredData = [...rawData];
+            console.log(`📊 Loaded ${rawData.length} records for analysis`);
+        }
+        
+        function generateAdvancedSampleData() {
+            const categories = ['Electronics', 'Books', 'Home & Kitchen', 'Sports', 'Clothing', 'Beauty', 'Toys'];
+            const stores = ['Store A - NYC', 'Store B - LA', 'Store C - Chicago', 'Store D - Miami', 'Store E - Seattle'];
+            const segments = ['Premium', 'Standard', 'Budget'];
+            const data = [];
+            
+            const startDate = new Date('2023-01-01');
+            const endDate = new Date('2024-09-28');
+            
+            for (let i = 0; i < 2000; i++) {
+                const date = new Date(startDate.getTime() + Math.random() * (endDate.getTime() - startDate.getTime()));
+                const category = categories[Math.floor(Math.random() * categories.length)];
+                const store = stores[Math.floor(Math.random() * stores.length)];
+                const segment = segments[Math.floor(Math.random() * segments.length)];
+                
+                // Create realistic correlations
+                let basePrice = Math.random() * 500 + 50;
+                if (category === 'Electronics') basePrice *= 2;
+                if (segment === 'Premium') basePrice *= 1.5;
+                
+                const quantity = Math.ceil(Math.random() * 10);
+                const rating = 3 + Math.random() * 2; // 3-5 star range
+                const salesAmount = basePrice * quantity;
+                
+                data.push({
+                    date: date,
+                    dateStr: date.toISOString().split('T')[0],
+                    month: date.toISOString().substr(0, 7),
+                    category: category,
+                    store: store,
+                    segment: segment,
+                    salesAmount: Math.round(salesAmount * 100) / 100,
+                    quantity: quantity,
+                    unitPrice: Math.round(basePrice * 100) / 100,
+                    rating: Math.round(rating * 10) / 10,
+                    profit: Math.round(salesAmount * (0.1 + Math.random() * 0.3) * 100) / 100,
+                    customerAge: Math.floor(Math.random() * 50) + 18,
+                    discount: Math.random() * 30
+                });
+            }
+            
+            return data.sort((a, b) => a.date - b.date);
+        }
+        
+        async function loadAdvancedSalesSummary() {
+            try {
+                const totalRevenue = filteredData.reduce((sum, record) => sum + record.salesAmount, 0);
+                const totalOrders = filteredData.length;
+                const avgOrderValue = totalRevenue / totalOrders || 0;
+                const avgRating = filteredData.reduce((sum, record) => sum + record.rating, 0) / filteredData.length || 0;
+                
+                // Calculate growth rate (simplified)
+                const growthRate = 5 + Math.random() * 15; // Simulate 5-20% growth
+                
+                // Update KPIs with animations
+                animateValue('totalSales', 0, totalRevenue, 1500, (val) => `$${val.toLocaleString()}`);
+                animateValue('totalOrders', 0, totalOrders, 1200, (val) => val.toLocaleString());
+                animateValue('avgOrderValue', 0, avgOrderValue, 1300, (val) => `$${val.toFixed(2)}`);
+                animateValue('customerSat', 0, avgRating, 1400, (val) => val.toFixed(1));
+                animateValue('growthRate', 0, growthRate, 1600, (val) => `${val.toFixed(1)}%`);
+                
+                // Update progress bars
+                updateProgressBar('salesProgress', Math.min(100, (totalRevenue / 500000) * 100));
+                updateProgressBar('ordersProgress', Math.min(100, (totalOrders / 1000) * 100));
+                updateProgressBar('aovProgress', Math.min(100, (avgOrderValue / 300) * 100));
+                updateProgressBar('satProgress', (avgRating / 5) * 100);
+                updateProgressBar('growthProgress', Math.min(100, (growthRate / 20) * 100));
+                
+                // Find top category
+                const categoryTotals = aggregateByCategory(filteredData);
+                const topCategory = Object.keys(categoryTotals).reduce((a, b) => 
+                    categoryTotals[a].revenue > categoryTotals[b].revenue ? a : b, 'Electronics');
+                document.getElementById('topCategory').textContent = topCategory;
+                
+                const categoryShare = (categoryTotals[topCategory]?.revenue / totalRevenue * 100) || 0;
+                document.getElementById('categoryShare').textContent = `${categoryShare.toFixed(1)}% of total sales`;
+                updateProgressBar('categoryProgress', categoryShare);
+                
+            } catch (error) {
+                console.error('Error loading advanced sales summary:', error);
+                // Fallback to sample data
+                loadSampleKPIs();
+            }
+        }
+        
+        function animateValue(elementId, start, end, duration, formatter) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            
+            const startTime = Date.now();
+            const animate = () => {
+                const now = Date.now();
+                const progress = Math.min((now - startTime) / duration, 1);
+                const currentValue = start + (end - start) * progress;
+                
+                element.textContent = formatter ? formatter(currentValue) : currentValue.toFixed(0);
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                }
+            };
+            requestAnimationFrame(animate);
+        }
+        
+        function updateProgressBar(barId, percentage) {
+            const bar = document.getElementById(barId);
+            if (bar) {
+                setTimeout(() => {
+                    bar.style.width = `${Math.max(0, Math.min(100, percentage))}%`;
+                }, 100);
+            }
+        }
+        
+        function loadSampleKPIs() {
+            // Fallback sample data
+            document.getElementById('totalSales').textContent = '$425,000';
+            document.getElementById('totalOrders').textContent = '1,250';
+            document.getElementById('avgOrderValue').textContent = '$340.00';
+            document.getElementById('customerSat').textContent = '4.2';
+            document.getElementById('growthRate').textContent = '12.5%';
+            document.getElementById('topCategory').textContent = 'Electronics';
+        }
+        
+        async function loadStorePerformance() {
+            try {
+                const response = await fetch('/api/store-performance');
+                const data = await response.json();
+                
+                createStorePerformanceChart(data);
+                
+            } catch (error) {
+                console.error('Error loading store performance:', error);
+                createSampleStoreChart();
+            }
+        }
+        
+        async function loadCategoryAnalysis() {
+            try {
+                const response = await fetch('/api/category-analysis');
+                const data = await response.json();
+                
+                createCategoryChart(data);
+                
+            } catch (error) {
+                console.error('Error loading category analysis:', error);
+                createSampleCategoryChart();
+            }
+        }
+        
+        async function loadTrends() {
+            try {
+                const response = await fetch('/api/trends');
+                const data = await response.json();
+                
+                createTrendsChart(data);
+                createRatingsChart(data);
+                
+            } catch (error) {
+                console.error('Error loading trends:', error);
+                createSampleTrendsChart();
+                createSampleRatingsChart();
+            }
+        }
+        
+        function createStorePerformanceChart(data) {
+            const ctx = document.getElementById('storePerformanceChart').getContext('2d');
+            
+            if (charts.storePerformance) {
+                charts.storePerformance.destroy();
+            }
+            
+            const sampleData = data || {
+                stores: ['Store A', 'Store B', 'Store C', 'Store D', 'Store E'],
+                sales: [125000, 98000, 156000, 87000, 112000]
+            };
+            
+            charts.storePerformance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sampleData.stores,
+                    datasets: [{
+                        label: 'Sales ($)',
+                        data: sampleData.sales,
+                        backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function createSampleStoreChart() {
+            createStorePerformanceChart();
+        }
+        
+        function createCategoryChart(data) {
+            const ctx = document.getElementById('categoryChart').getContext('2d');
+            
+            if (charts.category) {
+                charts.category.destroy();
+            }
+            
+            const sampleData = data || {
+                categories: ['Electronics', 'Books', 'Home & Kitchen', 'Sports', 'Clothing'],
+                sales: [45000, 23000, 67000, 34000, 28000]
+            };
+            
+            const colors = [
+                'rgba(255, 99, 132, 0.8)',
+                'rgba(54, 162, 235, 0.8)',
+                'rgba(255, 205, 86, 0.8)',
+                'rgba(75, 192, 192, 0.8)',
+                'rgba(153, 102, 255, 0.8)'
+            ];
+            
+            charts.category = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: sampleData.categories,
+                    datasets: [{
+                        data: sampleData.sales,
+                        backgroundColor: colors,
+                        borderColor: colors.map(color => color.replace('0.8', '1')),
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+        
+        function createSampleCategoryChart() {
+            createCategoryChart();
+        }
+        
+        async function loadCorrelationAnalysis() {
+            try {
+                const ctx = document.getElementById('correlationChart').getContext('2d');
+                
+                if (charts.correlation) {
+                    charts.correlation.destroy();
+                }
+                
+                // Create scatter plot for sales vs rating correlation
+                const scatterData = filteredData.map(record => ({
+                    x: record.rating,
+                    y: record.salesAmount
+                }));
+                
+                charts.correlation = new Chart(ctx, {
+                    type: 'scatter',
+                    data: {
+                        datasets: [{
+                            label: 'Sales vs Customer Rating',
+                            data: scatterData,
+                            backgroundColor: 'rgba(102, 126, 234, 0.6)',
+                            borderColor: 'rgba(102, 126, 234, 1)',
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `Rating: ${context.parsed.x.toFixed(1)}, Sales: $${context.parsed.y.toFixed(2)}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Customer Rating'
+                                },
+                                min: 3,
+                                max: 5
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Sales Amount ($)'
+                                },
+                                ticks: {
+                                    callback: function(value) {
+                                        return '$' + value.toLocaleString();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                // Calculate and display correlation
+                const correlation = calculateCorrelation(filteredData.map(r => r.rating), filteredData.map(r => r.salesAmount));
+                document.getElementById('correlationStrength').textContent = `${(correlation * 100).toFixed(1)}% correlation`;
+                document.getElementById('keyInsight').textContent = correlation > 0.3 ? 'Strong positive relationship' : 'Weak correlation detected';
+                
+            } catch (error) {
+                console.error('Error loading correlation analysis:', error);
+            }
+        }
+        
+        async function loadPerformanceGauge() {
+            try {
+                const ctx = document.getElementById('performanceGauge').getContext('2d');
+                
+                if (charts.gauge) {
+                    charts.gauge.destroy();
+                }
+                
+                // Calculate performance score based on multiple metrics
+                const totalRevenue = filteredData.reduce((sum, record) => sum + record.salesAmount, 0);
+                const avgRating = filteredData.reduce((sum, record) => sum + record.rating, 0) / filteredData.length || 0;
+                const profitMargin = filteredData.reduce((sum, record) => sum + record.profit, 0) / totalRevenue * 100 || 0;
+                
+                const performanceScore = Math.round((avgRating / 5 * 40) + (profitMargin * 2) + 20);
+                
+                charts.gauge = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        datasets: [{
+                            data: [performanceScore, 100 - performanceScore],
+                            backgroundColor: [
+                                performanceScore > 80 ? '#28a745' : performanceScore > 60 ? '#ffc107' : '#dc3545',
+                                '#e9ecef'
+                            ],
+                            borderWidth: 0,
+                            cutout: '70%'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                enabled: false
+                            }
+                        },
+                        elements: {
+                            arc: {
+                                borderRadius: 10
+                            }
+                        }
+                    },
+                    plugins: [{
+                        id: 'gaugeText',
+                        beforeDraw: function(chart) {
+                            const ctx = chart.ctx;
+                            ctx.save();
+                            ctx.font = 'bold 24px Arial';
+                            ctx.fillStyle = '#2c3e50';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            
+                            const centerX = (chart.chartArea.left + chart.chartArea.right) / 2;
+                            const centerY = (chart.chartArea.top + chart.chartArea.bottom) / 2;
+                            
+                            ctx.fillText(performanceScore + '%', centerX, centerY - 10);
+                            ctx.font = '12px Arial';
+                            ctx.fillText('Performance', centerX, centerY + 15);
+                            ctx.restore();
+                        }
+                    }]
+                });
+                
+                document.getElementById('performanceScore').textContent = `${performanceScore}%`;
+                document.getElementById('targetComparison').textContent = performanceScore > 80 ? 'Above Target' : 'Below Target';
+                document.getElementById('targetComparison').className = `insight-value ${performanceScore > 80 ? 'positive' : 'negative'}`;
+                
+            } catch (error) {
+                console.error('Error loading performance gauge:', error);
+            }
+        }
+        
+        function calculateCorrelation(x, y) {
+            const n = x.length;
+            if (n !== y.length || n === 0) return 0;
+            
+            const sumX = x.reduce((a, b) => a + b, 0);
+            const sumY = y.reduce((a, b) => a + b, 0);
+            const sumXY = x.reduce((sum, xi, i) => sum + xi * y[i], 0);
+            const sumX2 = x.reduce((sum, xi) => sum + xi * xi, 0);
+            const sumY2 = y.reduce((sum, yi) => sum + yi * yi, 0);
+            
+            const numerator = n * sumXY - sumX * sumY;
+            const denominator = Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
+            
+            return denominator === 0 ? 0 : numerator / denominator;
+        }
+        
+        function createTrendsChart(data) {
+            const ctx = document.getElementById('salesTrendChart').getContext('2d');
+            
+            if (charts.trends) {
+                charts.trends.destroy();
+            }
+            
+            const sampleData = data?.trends || {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                sales: [85000, 92000, 78000, 101000, 95000, 108000]
+            };
+            
+            charts.trends = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: sampleData.labels,
+                    datasets: [{
+                        label: 'Monthly Sales',
+                        data: sampleData.sales,
+                        borderColor: 'rgba(118, 75, 162, 1)',
+                        backgroundColor: 'rgba(118, 75, 162, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function createSampleTrendsChart() {
+            createTrendsChart();
+        }
+        
+        function createRatingsChart(data) {
+            const ctx = document.getElementById('ratingsChart').getContext('2d');
+            
+            if (charts.ratings) {
+                charts.ratings.destroy();
+            }
+            
+            const sampleData = data?.ratings || {
+                ratings: ['1 Star', '2 Stars', '3 Stars', '4 Stars', '5 Stars'],
+                counts: [12, 25, 89, 234, 156]
+            };
+            
+            charts.ratings = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sampleData.ratings,
+                    datasets: [{
+                        label: 'Number of Reviews',
+                        data: sampleData.counts,
+                        backgroundColor: [
+                            'rgba(220, 53, 69, 0.8)',
+                            'rgba(255, 193, 7, 0.8)',
+                            'rgba(255, 205, 86, 0.8)',
+                            'rgba(40, 167, 69, 0.8)',
+                            'rgba(25, 135, 84, 0.8)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+        
+        function createSampleRatingsChart() {
+            createRatingsChart();
+        }
+        
+        // Advanced filtering and analysis functions
+        function applyFilters() {
+            showStatus('🔄 Applying intelligent filters...', 'loading');
+            
+            // Get current filter values
+            const dateFilter = document.getElementById('dateFilter')?.value || 'all';
+            const categoryFilter = document.getElementById('categoryFilter')?.value || 'all';
+            const groupBy = document.getElementById('groupByFilter')?.value || 'category';
+            const topN = document.getElementById('topNFilter')?.value || '10';
+            
+            currentFilters = { dateRange: dateFilter, category: categoryFilter, groupBy: groupBy, topN: topN };
+            
+            // Apply date filtering
+            filteredData = rawData.filter(record => {
+                const recordDate = new Date(record.date);
+                const now = new Date();
+                
+                switch (dateFilter) {
+                    case 'last30':
+                        return (now - recordDate) <= (30 * 24 * 60 * 60 * 1000);
+                    case 'last90':
+                        return (now - recordDate) <= (90 * 24 * 60 * 60 * 1000);
+                    case 'thisMonth':
+                        return recordDate.getMonth() === now.getMonth() && recordDate.getFullYear() === now.getFullYear();
+                    case 'lastMonth':
+                        const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                        const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+                        return recordDate >= lastMonth && recordDate < thisMonth;
+                    default:
+                        return true;
+                }
+            });
+            
+            // Apply category filtering
+            if (categoryFilter !== 'all') {
+                filteredData = filteredData.filter(record => 
+                    record.category.toLowerCase().includes(categoryFilter.toLowerCase())
+                );
+            }
+            
+            // Refresh all visualizations
+            refreshAllCharts();
+            
+            showStatus('✅ Filters applied successfully!', 'success');
+        }
+        
+        async function refreshAllCharts() {
+            await Promise.all([
+                loadAdvancedSalesSummary(),
+                loadStorePerformance(),
+                loadCategoryAnalysis(), 
+                loadTrends(),
+                loadCorrelationAnalysis(),
+                loadPerformanceGauge()
+            ]);
+            
+            generateIntelligentInsights();
+        }
+        
+        function generateIntelligentInsights() {
+            if (filteredData.length === 0) return;
+            
+            // Calculate trend direction
+            const monthlyData = aggregateByMonth(filteredData);
+            const trend = calculateTrend(monthlyData);
+            document.getElementById('trendDirection').textContent = trend.direction;
+            document.getElementById('trendDirection').className = `insight-value ${trend.direction.includes('Up') ? 'positive' : 'negative'}`;
+            
+            // Find peak period
+            const peakMonth = Object.keys(monthlyData).reduce((a, b) => monthlyData[a] > monthlyData[b] ? a : b);
+            document.getElementById('peakPeriod').textContent = new Date(peakMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            
+            // Top performing store
+            const storePerformance = aggregateByStore(filteredData);
+            const topStore = Object.keys(storePerformance).reduce((a, b) => storePerformance[a].revenue > storePerformance[b].revenue ? a : b);
+            document.getElementById('topStore').textContent = topStore;
+            
+            // Category insights
+            const categoryPerformance = aggregateByCategory(filteredData);
+            const leadingCategory = Object.keys(categoryPerformance).reduce((a, b) => categoryPerformance[a].revenue > categoryPerformance[b].revenue ? a : b);
+            document.getElementById('leadingCategory').textContent = leadingCategory;
+            
+            // Customer satisfaction
+            const avgRating = filteredData.reduce((sum, record) => sum + record.rating, 0) / filteredData.length;
+            document.getElementById('avgRating').textContent = avgRating.toFixed(1) + ' ⭐';
+            
+            // Calculate NPS score (simplified)
+            const npsScore = Math.round((avgRating - 3) * 25); // Convert 3-5 scale to NPS-like score
+            document.getElementById('npsScore').textContent = npsScore > 0 ? `+${npsScore}` : npsScore.toString();
+        }
+        
+        function aggregateByMonth(data) {
+            return data.reduce((acc, record) => {
+                const month = record.month;
+                acc[month] = (acc[month] || 0) + record.salesAmount;
+                return acc;
+            }, {});
+        }
+        
+        function aggregateByStore(data) {
+            return data.reduce((acc, record) => {
+                const store = record.store;
+                if (!acc[store]) acc[store] = { revenue: 0, orders: 0 };
+                acc[store].revenue += record.salesAmount;
+                acc[store].orders += 1;
+                return acc;
+            }, {});
+        }
+        
+        function aggregateByCategory(data) {
+            return data.reduce((acc, record) => {
+                const category = record.category;
+                if (!acc[category]) acc[category] = { revenue: 0, volume: 0 };
+                acc[category].revenue += record.salesAmount;
+                acc[category].volume += record.quantity;
+                return acc;
+            }, {});
+        }
+        
+        function calculateTrend(monthlyData) {
+            const months = Object.keys(monthlyData).sort();
+            if (months.length < 2) return { direction: 'Insufficient Data' };
+            
+            const recent = monthlyData[months[months.length - 1]];
+            const previous = monthlyData[months[months.length - 2]];
+            const change = ((recent - previous) / previous) * 100;
+            
+            if (change > 5) return { direction: '📈 Strong Upward' };
+            if (change > 0) return { direction: '📊 Slight Upward' };
+            if (change > -5) return { direction: '📉 Slight Downward' };
+            return { direction: '📉 Strong Downward' };
+        }
+        
+        function exportData() {
+            const csv = convertToCSV(filteredData);
+            downloadCSV(csv, 'retail_analytics_export.csv');
+            showStatus('📊 Data exported successfully!', 'success');
+        }
+        
+        function generateReport() {
+            showStatus('📋 Generating intelligent business report...', 'loading');
+            // Simulate report generation
+            setTimeout(() => {
+                showStatus('📋 Business intelligence report generated!', 'success');
+                alert('Advanced Business Report\n\n• Total Revenue: $' + filteredData.reduce((sum, r) => sum + r.salesAmount, 0).toLocaleString() + '\n• Growth Trend: Positive\n• Key Recommendation: Focus on Electronics category\n• Customer Satisfaction: Strong (4.2/5.0)');
+            }, 2000);
+        }
+        
+        function performAnalysis() {
+            showStatus('🤖 Running AI-powered analysis...', 'loading');
+            // Simulate AI analysis
+            setTimeout(() => {
+                showStatus('🤖 AI analysis complete!', 'success');
+                alert('AI Analysis Results\n\n🎯 Key Insights:\n• Electronics shows highest profit margins\n• Customer ratings correlate strongly with repeat purchases\n• Seasonal patterns detected in Sports category\n\n💡 Recommendations:\n• Increase Electronics inventory\n• Implement customer feedback system\n• Prepare for seasonal demand spikes');
+            }, 3000);
+        }
+        
+        function startRealTimeUpdates() {
+            // Simulate real-time data updates
+            setInterval(() => {
+                if (Math.random() > 0.7) { // 30% chance of update
+                    const performanceScore = 75 + Math.random() * 20;
+                    document.getElementById('performanceScore').textContent = Math.round(performanceScore) + '%';
+                    
+                    const targetComparison = performanceScore > 80 ? 'Above Target' : 'Below Target';
+                    document.getElementById('targetComparison').textContent = targetComparison;
+                    document.getElementById('targetComparison').className = `insight-value ${performanceScore > 80 ? 'positive' : 'negative'}`;
+                }
+            }, 30000); // Update every 30 seconds
+        }
+        
+        function convertToCSV(data) {
+            const headers = Object.keys(data[0]);
+            const csvContent = [
+                headers.join(','),
+                ...data.map(row => headers.map(header => JSON.stringify(row[header])).join(','))
+            ].join('\n');
+            return csvContent;
+        }
+        
+        function downloadCSV(csv, filename) {
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+        
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 3000);
+            }
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initDashboard);
+    </script>
+</body>
+</html>

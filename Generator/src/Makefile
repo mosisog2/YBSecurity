@@ -1,4 +1,4 @@
-# Makefile for Java Sales Dashboard
+# Makefile for Java Sales Dashboard (JavaFX + XChart)
 
 # Variables
 JAVAC = javac
@@ -6,9 +6,8 @@ JAVA = java
 JFLAGS = -d bin
 SRC_DIR = .
 BIN_DIR = bin
-# When running with `java` the main class should be the fully-qualified class name (no .java/.class)
 MAIN_CLASS = SalesDashboard
-JAR_LIB = lib/xchart-3.8.1.jar # Add your JAR dependencies here
+JAR_LIB = lib/xchart-3.8.1.jar
 # JavaFX libs installed by openjfx on Ubuntu WSL
 JAVAFX_LIBS = /usr/share/openjfx/lib/javafx.base.jar:/usr/share/openjfx/lib/javafx.controls.jar:/usr/share/openjfx/lib/javafx.fxml.jar:/usr/share/openjfx/lib/javafx.graphics.jar:/usr/share/openjfx/lib/javafx.media.jar:/usr/share/openjfx/lib/javafx.swing.jar:/usr/share/openjfx/lib/javafx.web.jar
 
